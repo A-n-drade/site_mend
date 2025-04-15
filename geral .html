@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Página Inicial</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #dbeafe, #f0f9ff);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      margin-top: 30px;
+      color: #1e3a8a;
+    }
+
+    .button-container {
+      margin: 40px 0;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .button-container a {
+      text-decoration: none;
+    }
+
+    .btn {
+      background: linear-gradient(to right, #3b82f6, #60a5fa);
+      color: white;
+      padding: 15px 25px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.4s ease, transform 0.3s ease;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn:hover {
+      background: linear-gradient(to right, #2563eb, #3b82f6);
+      transform: scale(1.05);
+    }
+
+    .news-section {
+      width: 90%;
+      max-width: 800px;
+      background: white;
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+      margin-bottom: 40px;
+    }
+
+    .news-title {
+      font-size: 24px;
+      margin-bottom: 15px;
+      color: #1e40af;
+    }
+
+    .news-item {
+      margin-bottom: 10px;
+      border-left: 5px solid #3b82f6;
+      padding-left: 10px;
+      animation: fadeIn 1s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    footer {
+      margin-top: auto;
+      padding: 15px;
+      background-color: #1e3a8a;
+      color: white;
+      width: 100%;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Bem-vindo ao Sistema</h1>
+
+  <div class="button-container">
+    <a href="servi.html"><button class="btn">Sistema de Dízimos</button></a>
+    <a href="portal do est.html"><button class="btn">Portal do Estudante</button></a>
+    <a href="#"><button class="btn">Relatórios Mensais</button></a>
+    <a href="carso.html"><button class="btn">Sistema de gestão oficina</button></a>
+  </div>
+
+  <div class="news-section">
+    <div class="news-title">Últimas Notícias</div>
+    <div class="news-item">Novo relatório financeiro do mês disponível!</div>
+    <div class="news-item">Atualização no portal do estudante com novos gráficos!</div>
+    <div class="news-item">Sistema de ofertas agora com suporte a relatórios automáticos!</div>
+  </div>
+
+  <footer>
+    &copy; 2025 - Sistema Integrado | Desenvolvido by Andrade
+  </footer>
+
+</body>
+</html>

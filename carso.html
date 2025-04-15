@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gestão da Oficina Mendonça</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #dfe9f3, #ffffff);
+      padding: 30px;
+    }
+
+    .container {
+      background-color: #fff;
+      padding: 25px;
+      max-width: 700px;
+      margin: auto;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    h1, h2 {
+      text-align: center;
+      color: #333;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    input, button, select {
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #218838;
+    }
+
+    .btn-remover {
+      background-color: #dc3545;
+      margin-top: 8px;
+      padding: 6px 12px;
+      border-radius: 4px;
+    }
+
+    .btn-remover:hover {
+      background-color: #c82333;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li {
+      background: #f9f9f9;
+      margin-top: 12px;
+      padding: 15px;
+      border-left: 6px solid #28a745;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .filter {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .counter {
+      text-align: right;
+      margin-top: 10px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Gestão da Oficina Mendonça</h1>
+
+    <form id="form-servico">
+      <input type="text" id="cliente" placeholder="Nome do Cliente" required />
+      <input type="text" id="veiculo" placeholder="Veículo" required />
+      <input type="text" id="servico" placeholder="Serviço Realizado" required />
+      <button type="submit">Cadastrar Serviço</button>
+    </form>
+
+    <div class="filter">
+      <label for="filtro-cliente">Filtrar por cliente:</label>
+      <input type="text" id="filtro-cliente" placeholder="Digite o nome..." />
+    </div>
+
+    <h2>Serviços Registrados</h2>
+    <ul id="lista-servicos"></ul>
+    <div class="counter" id="contador-servicos">Total de serviços: 0</div>
+  </div>
+
+  <script>
+    const form = document.getElementById("form-servico");
+    const listaServicos = document.getElementById("lista-servicos");
+    const filtroCliente = document.getElementById("filtro-cliente");
+    const contadorServicos = document.getElementById("contador-servicos");
+
+    document.addEventListener("DOMContentLoaded", carregarServicos);
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const cliente = document.getElementById("cliente").value;
+      const veiculo = document.getElementById("veiculo").value;
+      const servico = document.getElementById("servico").value;
+      const data = new Date().toLocaleDateString();
+
+      const novoServico = { cliente, veiculo, servico, data };
+
+      let servicos = JSON.parse(localStorage.getItem("servicos")) || [];
+      servicos.push(novoServico);
+      localStorage.setItem("servicos", JSON.stringify(servicos));
+
+      form.reset();
+      carregarServicos();
+    });
+
+    filtroCliente.addEventListener("input", carregarServicos);
+
+    function carregarServicos() {
+      listaServicos.innerHTML = "";
+      const servicos = JSON.parse(localStorage.getItem("servicos")) || [];
+
+      const filtro = filtroCliente.value.toLowerCase();
+      const servicosFiltrados = servicos.filter(s => s.cliente.toLowerCase().includes(filtro));
+
+      servicosFiltrados.forEach((item, index) => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <strong>${item.cliente}</strong> - ${item.veiculo} <br>
+          Serviço: ${item.servico} <br>
+          <small>Data: ${item.data}</small><br>
+          <button class="btn-remover" onclick="removerServico(${index})">Remover</button>
+        `;
+        listaServicos.appendChild(li);
+      });
+
+      contadorServicos.textContent = `Total de serviços: ${servicosFiltrados.length}`;
+    }
+
+    function removerServico(index) {
+      let servicos = JSON.parse(localStorage.getItem("servicos")) || [];
+      servicos.splice(index, 1);
+      localStorage.setItem("servicos", JSON.stringify(servicos));
+      carregarServicos();
+    }
+  </script>
+</body>
+</html>

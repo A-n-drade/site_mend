@@ -1,0 +1,267 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Controle de Dízimos e Ofertas</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f6fc;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background: #2c3e50;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      font-size: 24px;
+    }
+
+    main {
+      max-width: 900px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .box {
+      background: white;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+    }
+
+    input, button, select {
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background-color: #2980b9;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #1f6391;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+
+    th {
+      background: #ecf0f1;
+    }
+
+    .report {
+      background: #dff0d8;
+      padding: 10px;
+      margin-top: 10px;
+      border-left: 5px solid #2ecc71;
+    }
+  </style>
+</head>
+<body>
+ <button style="padding: 10px 20px; background-color: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;" onclick="window.location.href='index.html'">
+  ← Voltar
+</button>
+
+
+  <header>Controle de Dízimos e Ofertas</header>
+  <main>
+    <div class="box">
+      <h2>Cadastrar Membro</h2>
+      <input type="text" id="nomeMembro" placeholder="Nome do membro">
+      <button onclick="adicionarMembro()">Adicionar</button>
+    </div>
+
+    <div class="box">
+      <h2>Buscar Membro</h2>
+      <input type="text" id="buscarMembro" placeholder="Buscar membro" oninput="filtrarMembros()">
+      <select id="selectMembro"></select><br>
+    </div>
+
+    <div class="box">
+      <h2>Registrar Dízimo e Oferta</h2>
+      <select id="sabadoSelect"></select><br>
+      <input type="number" id="dizimo" placeholder="Dízimo (Kz)" min="0" step="0.01">
+      <input type="number" id="oferta" placeholder="Oferta (Kz)" min="0" step="0.01">
+      <button onclick="registrarContribuicao()">Registrar</button>
+    </div>
+
+    <div class="box">
+      <h2>Relatório do Mês</h2>
+      <button onclick="gerarRelatorio()">Ver Relatório</button>
+      <button onclick="baixarPDF()">Exportar PDF</button>
+      <div id="relatorio"></div>
+    </div>
+  </main>
+
+  <script>
+    const membros = JSON.parse(localStorage.getItem("membros")) || [];
+    const contribuicoes = JSON.parse(localStorage.getItem("contribuicoes")) || [];
+
+    function salvarDados() {
+      localStorage.setItem("membros", JSON.stringify(membros));
+      localStorage.setItem("contribuicoes", JSON.stringify(contribuicoes));
+    }
+
+    function atualizarSelectMembros(filtro = "") {
+      const select = document.getElementById("selectMembro");
+      select.innerHTML = "";
+      membros
+        .filter(nome => nome.toLowerCase().includes(filtro.toLowerCase()))
+        .sort()
+        .forEach(nome => {
+          const opt = document.createElement("option");
+          opt.value = nome;
+          opt.textContent = nome;
+          select.appendChild(opt);
+        });
+    }
+
+    function filtrarMembros() {
+      const filtro = document.getElementById("buscarMembro").value;
+      atualizarSelectMembros(filtro);
+    }
+
+    function adicionarMembro() {
+      const nome = document.getElementById("nomeMembro").value.trim();
+      if (nome && !membros.includes(nome)) {
+        membros.push(nome);
+        membros.sort();
+        salvarDados();
+        atualizarSelectMembros();
+        document.getElementById("nomeMembro").value = "";
+      }
+    }
+
+    function getSaturdays() {
+      const hoje = new Date();
+      const year = hoje.getFullYear();
+      const month = hoje.getMonth();
+      const saturdays = [];
+
+      for (let day = 1; day <= 31; day++) {
+        const date = new Date(year, month, day);
+        if (date.getMonth() === month && date.getDay() === 6) {
+          saturdays.push(date);
+        }
+      }
+
+      const sabadoSelect = document.getElementById("sabadoSelect");
+      sabadoSelect.innerHTML = "";
+      saturdays.forEach((s, i) => {
+        const opt = document.createElement("option");
+        opt.value = s.toLocaleDateString("pt-BR");
+        opt.textContent = `Sábado ${i + 1} - ${s.toLocaleDateString("pt-BR")}`;
+        sabadoSelect.appendChild(opt);
+      });
+    }
+
+    function registrarContribuicao() {
+      const nome = document.getElementById("selectMembro").value;
+      const sabado = document.getElementById("sabadoSelect").value;
+      const dizimo = parseFloat(document.getElementById("dizimo").value);
+      const oferta = parseFloat(document.getElementById("oferta").value);
+
+      if (isNaN(dizimo) && isNaN(oferta)) {
+        alert("Preencha pelo menos o dízimo ou a oferta.");
+        return;
+      }
+
+      contribuicoes.push({ nome, dizimo: dizimo || 0, oferta: oferta || 0, data: sabado });
+      salvarDados();
+
+      document.getElementById("dizimo").value = "";
+      document.getElementById("oferta").value = "";
+      alert("Contribuição registrada com sucesso!");
+    }
+
+    function gerarRelatorio() {
+      const relDiv = document.getElementById("relatorio");
+      relDiv.innerHTML = "";
+
+      const hoje = new Date();
+      const mesAtual = hoje.getMonth();
+      const anoAtual = hoje.getFullYear();
+
+      const contribuicoesDoMes = contribuicoes.filter(item => {
+        const data = new Date(item.data.split("/").reverse().join("-"));
+        return data.getMonth() === mesAtual && data.getFullYear() === anoAtual;
+      });
+
+      if (contribuicoesDoMes.length === 0) {
+        relDiv.innerHTML = "<p>Nenhuma contribuição registrada neste mês.</p>";
+        return;
+      }
+
+      const totaisPorMembro = {};
+      let totalMes = 0;
+
+      contribuicoesDoMes.forEach(({ nome, dizimo, oferta }) => {
+        if (!totaisPorMembro[nome]) {
+          totaisPorMembro[nome] = { dizimo: 0, oferta: 0 };
+        }
+        totaisPorMembro[nome].dizimo += dizimo;
+        totaisPorMembro[nome].oferta += oferta;
+        totalMes += dizimo + oferta;
+      });
+
+      let html = `<div class="report"><strong>Total geral do mês:</strong> ${totalMes.toFixed(2)} Kz</div>`;
+      html += `<table>
+                <tr><th>Membro</th><th>Dízimo (Kz)</th><th>Oferta (Kz)</th><th>Total (Kz)</th></tr>`;
+      Object.keys(totaisPorMembro).sort().forEach(nome => {
+        const d = totaisPorMembro[nome];
+        html += `<tr>
+                  <td>${nome}</td>
+                  <td>${d.dizimo.toFixed(2)}</td>
+                  <td>${d.oferta.toFixed(2)}</td>
+                  <td><strong>${(d.dizimo + d.oferta).toFixed(2)}</strong></td>
+                </tr>`;
+      });
+      html += `</table>`;
+
+      html += `<h3>Detalhes:</h3><ul>`;
+      contribuicoesDoMes.forEach(({ nome, dizimo, oferta, data }) => {
+        html += `<li><strong>${data}</strong> - ${nome}: Dízimo ${dizimo.toFixed(2)} Kz, Oferta ${oferta.toFixed(2)} Kz</li>`;
+      });
+      html += `</ul>`;
+
+      relDiv.innerHTML = html;
+    }
+
+    function baixarPDF() {
+      const relatorio = document.getElementById("relatorio").innerText;
+      const doc = new jspdf.jsPDF();
+      const lines = relatorio.split("\n");
+      let y = 10;
+      lines.forEach(line => {
+        doc.text(line, 10, y);
+        y += 10;
+      });
+      doc.save("Relatorio_Dizimos_Ofertas.pdf"); // Baixa para pasta padrão de "Downloads" ou "Documentos"
+    }
+
+    atualizarSelectMembros();
+    getSaturdays();
+  </script>
+</body>
+</html>

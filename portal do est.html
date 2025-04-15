@@ -1,0 +1,215 @@
+ <!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Controle de Estudantes</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #eef2f3, #8e9eab);
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background: #2c3e50;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      font-size: 28px;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    main {
+      padding: 20px;
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    .form-box, .search-bar {
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      transition: all 0.3s ease;
+    }
+
+    input[type="text"], input[type="number"] {
+      padding: 10px;
+      margin: 10px 5px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      width: calc(25% - 22px);
+    }
+
+    button {
+      padding: 10px 20px;
+      background: #2980b9;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      margin: 5px;
+    }
+
+    button:hover {
+      background: #21618c;
+    }
+
+    .student {
+      background: #fff;
+      margin-bottom: 20px;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      animation: fadeIn 0.5s ease;
+    }
+
+    .student h3 {
+      margin: 0;
+      color: #2c3e50;
+    }
+
+    .student button {
+      margin-top: 10px;
+      background-color: #e74c3c;
+    }
+
+    .student button:hover {
+      background-color: #c0392b;
+    }
+
+    canvas {
+      max-width: 600px;
+      margin-top: 15px;
+    }
+
+    .total {
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <header>Controle de Estudantes</header>
+  <main>
+    <div class="form-box">
+      <h2>Adicionar Estudante</h2>
+      <input type="text" id="nome" placeholder="Nome do estudante" required>
+      <input type="number" id="nota1" placeholder="Nota 1º Tri" min="0" max="10">
+      <input type="number" id="nota2" placeholder="Nota 2º Tri" min="0" max="10">
+      <input type="number" id="nota3" placeholder="Nota 3º Tri" min="0" max="10">
+      <button onclick="adicionarEstudante()">Adicionar</button>
+      <button onclick="limparTodos()">Limpar Todos</button>
+    </div>
+
+    <div class="search-bar">
+      <input type="text" id="busca" placeholder="Buscar estudante..." oninput="renderizarEstudantes()">
+      <div class="total">Total de estudantes: <span id="total"></span></div>
+    </div>
+
+    <div class="student-list" id="listaEstudantes"></div>
+  </main>
+
+  <script>
+    let estudantes = JSON.parse(localStorage.getItem("estudantes")) || [];
+
+    function salvarEstudantes() {
+      localStorage.setItem("estudantes", JSON.stringify(estudantes));
+    }
+
+    function renderizarEstudantes() {
+      const lista = document.getElementById("listaEstudantes");
+      const busca = document.getElementById("busca").value.toLowerCase();
+      lista.innerHTML = "";
+
+      estudantes
+        .filter(e => e.nome.toLowerCase().includes(busca))
+        .sort((a, b) => a.nome.localeCompare(b.nome))
+        .forEach((estudante, index) => {
+          const media = ((estudante.nota1 + estudante.nota2 + estudante.nota3) / 3).toFixed(2);
+
+          const container = document.createElement("div");
+          container.className = "student";
+          const canvasId = `grafico-${estudante.nome}-${index}`;
+
+          container.innerHTML = `
+            <h3>${estudante.nome}</h3>
+            <p>Média: <strong>${media}</strong></p>
+            <canvas id="${canvasId}"></canvas>
+            <button onclick="removerEstudante(${index})">Remover</button>
+          `;
+          lista.appendChild(container);
+
+          const ctx = container.querySelector("canvas").getContext("2d");
+          new Chart(ctx, {
+            type: "bar",
+            data: {
+              labels: ["1º Tri", "2º Tri", "3º Tri"],
+              datasets: [{
+                label: "Notas",
+                data: [estudante.nota1, estudante.nota2, estudante.nota3],
+                backgroundColor: ["#3498db", "#2ecc71", "#f39c12"],
+                borderRadius: 10
+              }]
+            },
+            options: {
+              animation: { duration: 800 },
+              scales: { y: { beginAtZero: true, max: 10 } }
+            }
+          });
+        });
+
+      document.getElementById("total").innerText = estudantes.length;
+    }
+
+    function adicionarEstudante() {
+      const nome = document.getElementById("nome").value.trim();
+      const nota1 = parseFloat(document.getElementById("nota1").value);
+      const nota2 = parseFloat(document.getElementById("nota2").value);
+      const nota3 = parseFloat(document.getElementById("nota3").value);
+
+      if (!nome || isNaN(nota1) || isNaN(nota2) || isNaN(nota3)) {
+        alert("Preencha todos os campos corretamente!");
+        return;
+      }
+
+      estudantes.push({ nome, nota1, nota2, nota3 });
+      salvarEstudantes();
+      renderizarEstudantes();
+
+      document.getElementById("nome").value = "";
+      document.getElementById("nota1").value = "";
+      document.getElementById("nota2").value = "";
+      document.getElementById("nota3").value = "";
+    }
+
+    function removerEstudante(index) {
+      if (confirm("Deseja realmente remover este estudante?")) {
+        estudantes.splice(index, 1);
+        salvarEstudantes();
+        renderizarEstudantes();
+      }
+    }
+
+    function limparTodos() {
+      if (confirm("Tem certeza que deseja apagar TODOS os registros?")) {
+        estudantes = [];
+        salvarEstudantes();
+        renderizarEstudantes();
+      }
+    }
+
+    renderizarEstudantes();
+  </script>
+</body>
+</html>
